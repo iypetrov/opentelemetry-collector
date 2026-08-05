@@ -1,0 +1,39 @@
+COLLECTOR_NAME?=sdnotifyextension-demo
+
+.PHONY: build-image
+build-image:
+	docker build -f Dockerfile.demo -t ${COLLECTOR_NAME} .
+
+.PHONY: collector-up
+collector-up:
+	docker rm -f ${COLLECTOR_NAME} || true
+	docker run --name ${COLLECTOR_NAME} --privileged \
+		--cgroupns=host \
+		-v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+		--tmpfs /tmp --tmpfs /run --tmpfs /run/lock \
+		-p 3000:3000 -d ${COLLECTOR_NAME} 
+	docker exec -it ${COLLECTOR_NAME} journalctl -u otelcol.service -f
+
+.PHONY: sighup
+sighup:
+	@docker exec ${COLLECTOR_NAME} systemctl kill --signal=SIGHUP otelcol.service
+
+.PHONY: sigterm 
+sigterm:
+	@docker exec ${COLLECTOR_NAME} systemctl kill --signal=SIGTERM otelcol.service
+
+.PHONY: sigint 
+sigint:
+	@docker exec ${COLLECTOR_NAME} systemctl kill --signal=SIGINT otelcol.service
+
+.PHONY: reload 
+reload:
+	@docker exec ${COLLECTOR_NAME} systemctl reload otelcol.service 
+
+.PHONY: stop
+stop:
+	@docker exec ${COLLECTOR_NAME} systemctl stop otelcol.service 
+
+.PHONY: restart 
+restart:
+	@docker exec ${COLLECTOR_NAME} systemctl restart otelcol.service 

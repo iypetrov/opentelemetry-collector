@@ -132,6 +132,8 @@ func (s *sdnotify) Start(startCtx context.Context, host component.Host) error {
 				case <-ticker.C:
 					if _, err := daemon.SdNotify(false, daemon.SdNotifyWatchdog); err != nil {
 						s.logger.Debug("sdnotify WATCHDOG=1 failed", zap.Error(err))
+					} else {
+						s.logger.Debug("sdnotify sent WATCHDOG=1")
 					}
 				}
 			}

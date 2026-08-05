@@ -1,0 +1,21 @@
+extensions:
+  sdnotify: {}
+
+receivers:
+  filelog:
+    include:
+      - /var/log/*.log
+
+exporters:
+  debug:
+    verbosity: detailed
+
+service:
+  extensions: [sdnotify]
+  telemetry:
+    logs:
+      level: debug
+  pipelines:
+    logs:
+      receivers: [filelog]
+      exporters: [debug]

@@ -1,0 +1,16 @@
+FROM otel/opentelemetry-collector-builder:0.157.0 AS build-stage
+USER root
+WORKDIR /src
+COPY . /src
+RUN ocb --config=/src/manifest.yml \
+ && test -x /src/_build/otelcol
+
+FROM ghcr.io/fauust/docker-systemd:debian-13 AS run-stage
+COPY --from=build-stage /src/_build/otelcol /usr/local/bin/otelcol
+COPY otelcol-config.yaml /etc/otelcol/config.yaml
+COPY otelcol.service /etc/systemd/system/otelcol.service
+RUN ln -s /etc/systemd/system/otelcol.service /etc/systemd/system/multi-user.target.wants/otelcol.service
+ENV container=docker
+STOPSIGNAL SIGRTMIN+3
+
+CMD ["/lib/systemd/systemd"]

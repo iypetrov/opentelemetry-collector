@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenTelemetry Collector
+After=network-online.target
+
+[Service]
+Type=notify-reload
+ExecStart=/usr/local/bin/otelcol --config=/etc/otelcol/config.yaml
+WatchdogSec=10s
+Restart=always
+RestartSec=2s
+
+[Install]
+WantedBy=multi-user.target
